@@ -15,8 +15,7 @@ const tokens = (n) => {
 /* the strings that are 1st arguments describe the thing that's tested*/
 describe("Token", ()=> { /*tests are in here*/
 	/*We make the "token" variable, etc.*/
-	let token, accounts, deployer, receiver
-	
+	let token, accounts, deployer, receiver, exchange
 	
 
 	beforeEach(async() => {
@@ -34,6 +33,8 @@ describe("Token", ()=> { /*tests are in here*/
 		accounts = await ethers.getSigners()
 		deployer = accounts[0]
 		receiver = accounts[1]
+		/*exchange account is a pretended exchange account for testing*/
+		exchange = accounts[2]
 	})
 
 	describe("Deployment", () => {
@@ -141,6 +142,60 @@ describe("Token", ()=> { /*tests are in here*/
 	})
 
 		
+    })
+
+    describe("Approving Tokens", () => {
+
+    	/*this uses code very similar to "Sending Tokens", except "transfer" replaced by "approve",
+    	and "exchange" (address), instead of "receiver". For the test, this is connected with 
+    	the accounts section of describe("Token") section, in which there are accounts, 
+    	from ethers (ethers.getSigners(). There are test accounts made for deployer, receiver, and for exchage.
+    	The exchange acctount is used for executing this section of code.
+    	(exchange = accounts[2], exchange account is a pretended exchange account for testing, 
+    	and "exchange" is a variable) */
+		
+    	let amount, transaction, result
+
+    	beforeEach(async () => {
+    		amount = tokens(100)
+    		/*We call (in the contract) the "approve" function (which writes), with 100 tokens, 
+    		and we check if "allowance" function (which reads) was updated*/
+			transaction = await token.connect(deployer).approve(exchange.address, amount)
+			result = await transaction.wait()
+    	})
+
+    	describe("Success", () => {
+    		it("allocated an allowance for delegated token spending", async () => {
+    			/*We check for an allowance value, which is the amount 
+    			of the _value parameter in the "approve" function.
+    			To read and check allowance, we use this function
+    			(with deployer(/msg.sender) as owner and exchange as spender), and value is returned:*/
+    			expect(await token.allowance(deployer.address, exchange.address)).to.equal(amount)
+    		})
+
+    		
+    		it("Emits an Approval event", async () => {
+			const event = result.events[0]
+			expect(event.event).to.equal("Approval")
+			
+			const args = event.args
+			expect(args.owner).to.equal(deployer.address)
+			expect(args.spender).to.equal(exchange.address)
+			expect(args.value).to.equal(amount)
+
+		})
+
+
+    		/*we check that smart contract emits Aproval event*/
+
+
+    	})
+
+    	describe("Failure", () => {
+    		it("rejects invalid spenders", async () =>{
+    			await expect(token.connect(deployer).approve('0x0000000000000000000000000000000000000000', amount)).to.be.reverted
+    		})
+    	})
     })
 
 })
