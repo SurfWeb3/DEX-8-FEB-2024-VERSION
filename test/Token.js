@@ -28,7 +28,7 @@ describe("Token", ()=> { /*tests are in here*/
 		to token variable (and then we can call token.name)
 		This code has a deploy function that can send arguments to a constructor function in contract,
 		to make a contract template*/
-		token = await Token.deploy("Dapp University", "DAPP", "1000000" )
+		token = await Token.deploy("Dapp University", "DAPP", "1000000")
 
 		accounts = await ethers.getSigners()
 		deployer = accounts[0]

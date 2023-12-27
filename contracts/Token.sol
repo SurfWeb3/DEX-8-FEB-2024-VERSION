@@ -86,8 +86,9 @@ contract Token {
         }
 
         function transferFrom(address _from, address _to, uint256 _value) public returns (bool success) {
+          
             /* We also check that the account has enough tokens for the transaction */
-            require(_value <= balanceOf[_from]);
+            require(_value <= balanceOf[_from], "insufficient balance");
 
             /*/*Has _from allowed msg.sender to transfer tokens, and if yes, then what value/amount?
             We check that someone else is approved to spend tokens for us. 
@@ -100,7 +101,7 @@ contract Token {
             Require checks that _from address allows msg.sender to transfer tokens, 
             and (if so) that the amount / _value of these tokens is approved, and is not more than what is approved
             (less than or equal to).*/
-            require(_value <= allowance[_from][msg.sender]);
+            require(_value <= allowance[_from][msg.sender], "insufficient allowance");
             
 
 
