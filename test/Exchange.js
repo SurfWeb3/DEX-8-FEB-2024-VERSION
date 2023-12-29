@@ -23,11 +23,14 @@ describe("Exchange", ()=> { /*tests are in here*/
 		const Exchange = await ethers.getContractFactory("Exchange")
 		const Token = await ethers.getContractFactory("Token")
 
-/* We deploy the first token, "Token 1" */
+/* We deploy the first token, "token1" */
 		token1 = await Token.deploy("Dapp University", "DAPP", "1000000")
+/* We deploy the second token, "token2" */
+		token2 = await Token.deploy("Mock Dai", "mDAI", "1000000")
+
+
+
 /* We make user 1 (with account 2 in "accounts[]") */
-
-
 		accounts = await ethers.getSigners()
 		deployer = accounts[0]
 		feeAccount = accounts[1]
@@ -210,4 +213,71 @@ describe("Checking Balances", () => {
 	})
 
 
-})
+	describe("making orders", async () => {
+		let transaction, result
+
+		let amount = tokens(1)
+
+		describe("Success", async () => {
+			beforeEach(async () => {
+			/*we let user deposit tokens and approve*/
+
+				/* deposit tokens before making order */
+
+	/* approve token */
+	transaction = await token1.connect(user1).approve(exchange.address, amount)
+	result = await transaction.wait()
+
+	/* deposit token */
+	transaction = await exchange.connect(user1).depositToken(token1.address, amount)
+	result = await transaction.wait()
+
+	/*Make order*/
+	/*the user wants to receive token2 (_tokenGet), and give token1 (_tokenGive).
+	which user has in wallet before trade
+	(trading 1 token for 1 other token)*/
+	transaction = await exchange.connect(user1).makeOrder(token2.address, amount, token1.address, tokens(1))
+	result = await transaction.wait()
+
+
+			})
+
+			it("Tracks the newly created order", async () => {
+				/* An easy way to do this is to check that orderCount = 1 (as the total amount from the counter)*/
+				expect(await exchange.orderCount()).to.equal(1)
+
+			})
+
+			it("emits an Order event", async () => {
+				const event = result.events[0]
+				/* expect it to equal "Order" event*/
+				expect(event.event).to.equal("Order")
+				/* we check for these values: 
+				order id = 1, the user is user1, tokenGet is token2, amountGet is 1 (token), 
+				tokenGive is token1, amountGive is 1, timestamp is at least 1 
+				(so an amount is provided, since it is difficult to provide an exact time 
+				for this particular test)*/
+				const args = event.args
+				expect(args.id).to.equal(1)
+				expect(args.user).to.equal(user1.address)
+				expect(args.tokenGet).to.equal(token2.address)
+				expect(args.amountGet).to.equal(tokens(1))
+				expect(args.tokenGive).to.equal(token1.address)
+				expect(args.amountGive).to.equal(tokens(1))
+				expect(args.timestamp).to.at.least(1)
+			})
+
+		})
+
+			describe("Failure", async () => {
+				it("Rejects with no balance", async () => {
+					await expect(exchange.connect(user1).makeOrder(token2.address, tokens(1), 
+						token1.address, tokens(1))).to.be.reverted
+				})
+
+			})
+		})
+	})
+
+
+
