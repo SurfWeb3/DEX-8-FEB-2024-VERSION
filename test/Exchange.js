@@ -114,5 +114,100 @@ describe("Depositing Tokens", () => {
 	})
 })
 
+
+
+describe("Withdrawing Tokens", () => {
+	let transaction, result
+/* We deposit 10 tokens */
+	let amount = tokens(10)
+	 /* in this section we test for approving tokens and then depositing tokens*/
+	
+
+	describe("Success", () => {
+		beforeEach(async () => {
+			/* deposit tokens before withdrawing */
+	/* We make a transaction in which the user deposits tokens to the exchange.
+	"connect" is for connecting the wallet 
+	"depositToken is a function in Exchange contract" */
+	/* approve token */
+	transaction = await token1.connect(user1).approve(exchange.address, amount)
+	result = await transaction.wait()
+	/* deposit token */
+	transaction = await exchange.connect(user1).depositToken(token1.address, amount)
+	result = await transaction.wait()
+
+	/* now withdraw tokens, with the withdrawToken function in the "Exchange" contract */
+	transaction = await exchange.connect(user1).withdrawToken(token1.address, amount)
+	result = await transaction.wait()
+	 
+	
+	})
+
+		it("withdraws token funds", async () => {
+			expect(await token1.balanceOf(exchange.address)).to.equal(0)
+			expect(await exchange.tokens(token1.address, user1.address)).to.equal(0)
+			expect(await exchange.balanceOf(token1.address, user1.address)).to.equal(0) 
+
+
+		})
+
+			it("emits a Withdraw event", async () => {
+			const event = result.events[1]
+			expect(event.event).to.equal("Withdraw")
+			
+			const args = event.args
+			expect(args.token).to.equal(token1.address)
+			expect(args.user).to.equal(user1.address)
+			/* user withdrew this amount, "equal(amount)", 
+			and the balance hsould now equal zero, "equal(0)" */
+			expect(args.amount).to.equal(amount)
+			expect(args.balance).to.equal(0)
+
+		}) 
+
+	})
+
+	describe("Failure", () => {
+		it("fails for insufficient balances", async () => {
+			/* Attempt to withdraw tokens without depositing
+			beforeEach in Success section has a token deposit, before withdraw.
+			However, in the Failure section this is not done */
+			await expect(exchange.connect(user1).withdrawToken(token1.address, amount)).to.be.reverted 
+		}) 
 		
+	}) 
+})
+
+
+describe("Checking Balances", () => {
+	let transaction, result
+/* We deposit 1 token */
+	let amount = tokens(1)
+
+
+/*	describe("Success", () => { */
+		beforeEach(async () => {
+	/* We make a transaction in which the user deposits tokens to the exchange.
+	"connect" is for connecting the wallet 
+	"depositToken is a function in Exchange contract" */
+	/* approve token */
+	transaction = await token1.connect(user1).approve(exchange.address, amount)
+	result = await transaction.wait()
+	/* deposit token */
+	transaction = await exchange.connect(user1).depositToken(token1.address, amount)
+	result = await transaction.wait()
+	 
+	
+	})
+
+		it("returns user balance", async () => {
+			expect(await exchange.balanceOf(token1.address, user1.address)).to.equal(amount)
+
+
+		})
+
+			
+	})
+
+
 })

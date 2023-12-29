@@ -14,6 +14,9 @@ contract Exchange {
 
     event Deposit(address token, address user, uint256 amount, uint256 balance);
 
+    event Withdraw(address token, address user, uint256 amount, uint256 balance);
+
+
     constructor(address _feeAccount, uint256 _feePercent){
     /* We input this local variable, which is connected with the state vaiable 
     that is written on the blockchain. */
@@ -24,8 +27,8 @@ contract Exchange {
     /* DEPOSIT & WITHDRAW TOKEN */
     function depositToken(address _token, uint256 _amount) public {
         /*send tokens to exchange (from user's wallet), The exchange is this contract.*/
-        /*We call the token contract*/
-        require(Token(_token).transferFrom(msg.sender, address(this), _amount));
+        /*We call the Token contract*/
+        (Token(_token).transferFrom(msg.sender, address(this), _amount));
 
         /*update user balance (in "tokens" mapping), and show user how many tokens on exchange,
         by adding _amount to balance */
@@ -38,6 +41,22 @@ contract Exchange {
         We read the updated balance (in mapping) with "tokens[_token][msg.sender]",
         and emit the event. */
         emit Deposit(_token, msg.sender, _amount, tokens[_token][msg.sender]);
+    }
+
+    function withdrawToken(address _token, uint256 _amount) public {
+        /* Make sure user has enough tokens to withdraw */
+        require(tokens[_token][msg.sender] >= _amount);
+
+        /*transfer tokens to the user
+        with "Token(_token)" we call imported "Token" contract*/
+        Token(_token).transfer(msg.sender, _amount);
+
+        /*update user balance (of tokens on the exchange)*/
+        tokens[_token][msg.sender] = tokens[_token][msg.sender] - _amount;
+
+        /*emit event
+        we read balance with "tokens[_token][msg.sender]" */
+        emit Withdraw(_token, msg.sender, _amount, tokens[_token][msg.sender]);
     }
 
     /* check balance  for token and user address arguments, a number is returned */
