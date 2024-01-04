@@ -14,6 +14,10 @@ contract Exchange {
     
     /* ORDERS MAPPING First uint156 key is order ID, the value returned is _Order struct*/
     mapping(uint256 => _Order) public orders;
+
+        /*variable for the total number of orders made in this contract, starting at 0 (before an order is made)
+    1 is added to this this value every time an order is made*/
+    uint256 public orderCount;
     
     /* The key is orderID, and the value is true/false
     We save every order that is created on the blockchain,
@@ -21,9 +25,7 @@ contract Exchange {
     mapping(uint256 => bool) public orderCancelled;
     mapping(uint256 => bool) public orderFilled;
 
-    /*variable for the total number of orders made in this contract, starting at 0 (before an order is made)
-    1 is added to this this value every time an order is made*/
-    uint256 public orderCount;
+
 
     event Deposit(address token, address user, uint256 amount, uint256 balance);
 
