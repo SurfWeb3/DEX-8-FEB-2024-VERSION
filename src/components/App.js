@@ -1,36 +1,36 @@
 import { useEffect } from "react";
-import { ethers } from "ethers";
+import { useDispatch } from "react-redux";
 import config from "../config.json";
-import TOKEN_ABI from "../abis/Token.json";
-import '../App.css';
 
 
-
+import { 
+  loadProvider, 
+  loadNetwork, 
+  loadAccount,
+  loadToken
+} from "../store/interactions";
 
 function App() {
+  const dispatch = useDispatch()
 
   const loadBlockchainData = async () => {
     /* This makes an RPC call to our node, to get connected account. 
     This function gets the account from Metamask and shows it on the console. */
-    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+    await loadAccount(dispatch)
     /* console.log the first account (account 0) */
-    console.log(accounts[0])
+
 
     /* connect ethers to blockchain 
-    provider is our connection to the blockchain with ethers*/
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const { chainId } = await provider.getNetwork()
-    console.log(chainId)
-
-    console.log()
+    provider is our connection to the blockchain with ethers
+    PROVIDER_LOADED expects a connection*/
+    const provider = loadProvider(dispatch)
+    const chainId = await loadNetwork(provider, dispatch)
+   
 
     /* Token smart contract 
     Contract(address = the address in config.json, abi, signerOrProvider = provider variable)*/
-    const token = new ethers.Contract(config[chainId].DApp.address, TOKEN_ABI, provider)
-    console.log(token.address)
+    await loadToken(provider, config[chainId].DApp.address, dispatch)
     /* we can get the symbol of the token, calling the function: */
-    const symbol = await token.symbol()
-    console.log(symbol)
   }
 
   useEffect(() => {
