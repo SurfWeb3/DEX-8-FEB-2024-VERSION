@@ -11,6 +11,9 @@ import {
   loadExchange
 } from "../store/interactions";
 
+/* We import navigation bar React component */
+import Navbar from "./Navbar"
+
 function App() {
   const dispatch = useDispatch()
 
@@ -24,10 +27,24 @@ function App() {
     /* Get current network's chainId (for example Hardhat: 31337) */
     const chainId = await loadNetwork(provider, dispatch)
 
+    /* Load page again when network changes (when network/chain ID changes) 
+   "window" is a global JavaScript variable, "location" is the URL, 
+   and the instruction "reload()" calls a function to load the page again */
+    window.ethereum.on("chainChanged", () => {
+      window.location.reload()
+
+    })
+
     /* This makes an RPC call to our node, to get connected account. 
     This function gets the account from Metamask and shows it on the console. 
-    Get current account and balance from Metamask, etc. */
-    await loadAccount(provider, dispatch)
+    Get current account and balance from Metamask, etc. 
+    THIS WAS COPIED AND MOVED TO NAVBAR: await loadAccount(provider, dispatch)
+    But it is also used here, for when the account using the page 
+    is changed to another account*/
+    window.ethereum.on("accountsChanged", () => {
+      loadAccount(provider, dispatch)
+
+    })
    
 
     /* Token smart contract 
@@ -53,6 +70,8 @@ function App() {
 
   return (
     <div>
+
+      <Navbar/>
 
       {/* Navbar */}
 
