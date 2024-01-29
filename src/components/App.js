@@ -8,13 +8,17 @@ import {
   loadNetwork, 
   loadAccount,
   loadTokens,
-  loadExchange
+  loadExchange,
+  subscribeToEvents
 } from "../store/interactions";
 
 /* We import navigation bar React component */
 import Navbar from "./Navbar"
 /* We import Markets React component (for trading pairs) */
 import Markets from "./Markets"
+import Balance from "./Balance"
+
+
 
 
 function App() {
@@ -62,7 +66,10 @@ function App() {
     /* we call loadExchange function, to load the exchange contract 
     Load exchange smart contract */
     const exchangeConfig = config[chainId].exchange
-    await loadExchange(provider, exchangeConfig.address, dispatch)
+    const exchange = await loadExchange(provider, exchangeConfig.address, dispatch)
+
+    /* Listen to events */
+    subscribeToEvents(exchange, dispatch)
     
 
   }
@@ -81,7 +88,7 @@ function App() {
 
           <Markets />
 
-          {/* Balance */}
+          <Balance />
 
           {/* Order */}
 
