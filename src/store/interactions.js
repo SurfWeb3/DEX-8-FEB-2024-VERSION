@@ -64,14 +64,19 @@ export const subscribeToEvents = (exchange, dispatch) => {
 exchange.on("Deposit", (token, user, amount, balance, event) => {
 /* Give data to app that deposit/transfer was successful */
     dispatch({ type: "TRANSFER_SUCCESS", event })
+})
 
 
 exchange.on("Withdraw", (token, user, amount, balance, event) => {
 /* Give data to app that deposit/transfer was successful */
     dispatch({ type: "TRANSFER_SUCCESS", event })
-
 })
 
+
+exchange.on("Order", (id, user, tokenGet, amountGet, tokenGive, amountGive, timestamp, event) => {
+     const order = event.args
+/* Give data to app that order was successful */
+    dispatch({ type: "NEW_ORDER_SUCCESS", order, event })
 })
 
 }
@@ -104,7 +109,8 @@ dispatch({ type: "TRANSFER_REQUEST" })
 
 try {
 
-    /* "getSigner" is what we use with Metamask to sign transaction with our private key */
+    /* "getSigner" is what we use with Metamask to sign transaction with our private key
+    and interact with the blockchain */
  const signer = await provider.getSigner() 
  const amountToTransfer = ethers.utils.parseUnits(amount.toString(), 18)
 
@@ -132,5 +138,63 @@ try {
 
 
 }
+
+/* ORDERS (BUY & SELL) */
+
+export const makeBuyOrder = async (provider, exchange, tokens, order, dispatch) => {
+
+ /*   address _tokenGet : BUY TOKEN,
+    uint256 _amountGet : BUY AMOUNT,
+
+    address _tokenGive,
+    uint256 _amountGive  : ORDER AMOUNT X ORDER PRICE = THE NUMBER */
+
+    const tokenGet = tokens[0].address
+    const amountGet = ethers.utils.parseUnits(order.amount, 18)
+    const tokenGive = tokens[1].address
+    const amountGive = ethers.utils.parseUnits((order.amount * order.price).toString(), 18)
+
+    dispatch({ type: "NEW_ORDER_REQUEST" })
+
+
+    try {
+            /* "getSigner" is what we use with Metamask to sign transaction with our private key,
+    and interact with the blockchain */
+    const signer = await provider.getSigner() 
+    const transaction = await exchange.connect(signer).makeOrder(tokenGet, amountGet, tokenGive, amountGive)
+    await transaction.wait()
+   } catch (error) {
+    dispatch({ type: "NEW_ORDER_FAIL" })
+   } 
+}
+
+export const makeSellOrder = async (provider, exchange, tokens, order, dispatch) => {
+
+ /*   address _tokenGet : BUY TOKEN,
+    uint256 _amountGet : BUY AMOUNT,
+
+    address _tokenGive,
+    uint256 _amountGive  : ORDER AMOUNT X ORDER PRICE = THE NUMBER */
+
+    const tokenGet = tokens[1].address
+    const amountGet = ethers.utils.parseUnits((order.amount * order.price).toString(), 18)
+    const tokenGive = tokens[0].address
+    const amountGive = ethers.utils.parseUnits(order.amount, 18)
+
+    dispatch({ type: "NEW_ORDER_REQUEST" })
+
+
+    try {
+            /* "getSigner" is what we use with Metamask to sign transaction with our private key,
+    and interact with the blockchain */
+    const signer = await provider.getSigner() 
+    const transaction = await exchange.connect(signer).makeOrder(tokenGet, amountGet, tokenGive, amountGive)
+    await transaction.wait()
+   } catch (error) {
+    dispatch({ type: "NEW_ORDER_FAIL" })
+   } 
+}
+
+
 
 
