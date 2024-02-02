@@ -1,5 +1,5 @@
 import { createSelector } from "reselect"
-import { get, groupBy, reject } from "lodash";
+import { get, groupBy, reject, maxBy, minBy } from "lodash";
 import moment from "moment"
 import { ethers } from "ethers";
 
@@ -139,4 +139,78 @@ const decorateOrderBookOrder = (order, tokens) => {
 /* If orderTRype is buy, we do the opposite and sell, or/else buy is the default */
 		orderFillAction: (orderType === "buy" ? "sell" : "buy")
   })
+}
+
+/* SELECTOR FOR PRICE CHART */
+
+export const priceChartSelector = createSelector(
+	filledOrders, 
+	tokens, 
+	(orders, tokens) => {
+/* We make sure that we have data of both tokens*/
+		if (!tokens[0] || !tokens[1]) { return }
+
+/* filter orders for selected tokens, with JavaScript filter function,
+filtering an array, and returning a new array */
+orders = orders.filter((o) => o.tokenGet === tokens[0].address || o.tokenGet === tokens[1].address)
+orders = orders.filter((o) => o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address)
+
+/* Sort orders re timestamp/date, increasing (earlier to later) */
+orders = orders.sort((a, b) => a.timestamp - b.timestamp)
+
+/* Add information re orders, and features of items shown */
+orders = orders.map((o) => decorateOrder(o, tokens))
+
+let secondLastOrder, lastOrder
+/* Get the last 2 elements from the array, for last 2 orders & price change */
+[secondLastOrder, lastOrder] = orders.slice(orders.length - 2, orders.length)
+
+const lastPrice = get(lastOrder, "tokenPrice", 0)
+
+/* Get second last order price */
+const secondLastPrice = get(secondLastOrder, "tokenPrice", 0)
+
+return ({
+	lastPrice,
+	lastPriceChange: (lastPrice >= secondLastPrice ? "+" : "-"),
+	series: [{
+		data: buildGraphData(orders)
+		}]
+})
+
+  }
+)
+
+const buildGraphData = (orders) => {
+	/* Group orders re periods for the graph */
+	/* This gives an object, using the moment library, and using moment, we can format */
+orders = groupBy(orders, (o) => moment.unix(o.timestamp).startOf("hour").format())
+
+/* We get unique day/hour/etc, for the data of a particular period,
+and use it for the time of each candlestick */
+const hours = Object.keys(orders)
+
+/* Make the graph series */
+const graphData = hours.map((hour) => {
+
+	/* Get all orders from current period
+	hour/day/etc is the object key */
+	const group = orders[hour]
+
+	/* Calculate price values: opening, high, low, closing */
+	/* We select the first/earliest order in the sorted array */
+	const open = group[0]
+	const high = maxBy(group, "tokenPrice")
+	const low = minBy(group, "tokenPrice")
+	/* We select the last/latest order in the sorted array */
+	const close = group[group.length -1]
+
+	return({
+		x: new Date(hour),
+		y: [open.tokenPrice, high.tokenPrice, low.tokenPrice, close.tokenPrice]
+	})
+  })
+
+	return graphData
+
 }

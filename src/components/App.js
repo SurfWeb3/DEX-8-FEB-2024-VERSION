@@ -20,7 +20,9 @@ import Navbar from "./Navbar"
 import Markets from "./Markets"
 import Balance from "./Balance"
 import Order from "./Order"
+import PriceChart from "./PriceChart"
 import OrderBook from "./OrderBook"
+
 
 
 
@@ -104,7 +106,7 @@ Get all orders: open, filled, cancelled */
         </section>
         <section className='exchange__section--right grid'>
 
-          {/* PriceChart */}
+          <PriceChart />
 
           {/* Transactions */}
 
