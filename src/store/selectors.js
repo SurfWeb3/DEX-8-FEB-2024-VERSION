@@ -47,6 +47,7 @@ const decorateOrder = (order, tokens) => {
     	token1Amount = order.amountGive
     }
 
+/* Calculate token price to 5 decimal places */
     const precision = 100000
     let tokenPrice = (token1Amount / token0Amount)
     tokenPrice = Math.round(tokenPrice * precision) / precision
@@ -62,17 +63,89 @@ const decorateOrder = (order, tokens) => {
 }  
 
 
-/*
-  return ({
+/* return ({
     ...order,
     token1Amount: ethers.utils.formatUnits(token1Amount, "ether"),
     token0Amount: ethers.utils.formatUnits(token0Amount, "ether"),
     tokenPrice,
     formattedTimestamp: moment.unix(order.timestamp).format('h:mm:ssa d MMM D')
-  })
+  }) */
 
- */
 
+/* ALL FILLED ORDERS */
+export const filledOrdersSelector = createSelector(
+	filledOrders,
+	tokens,
+	(orders, tokens) => {
+		/* We make sure that we have data of both tokens*/
+		if (!tokens[0] || !tokens[1]) { return }
+
+/* filter orders for selected tokens, with JavaScript filter function,
+filtering an array, and returning a new array */
+orders = orders.filter((o) => o.tokenGet === tokens[0].address || o.tokenGet === tokens[1].address)
+orders = orders.filter((o) => o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address)
+
+/* Sort orders re time, earlier => later, for price comparison */
+
+orders = orders.sort((a, b) => a.timestamp - b.timestamp)
+
+
+/* Add green/red color */
+
+
+/* Sort orders re time, later => earlier, for UI */
+
+
+/* Adding green/red by calling the function */
+orders = decorateFilledOrders(orders, tokens)
+
+orders = orders.sort((a, b) => b.timestamp - a.timestamp)
+
+  return orders
+
+  }
+ )
+
+const decorateFilledOrders = (orders, tokens) => {
+	/* Keep track of previous order to compare history/prices */
+	let previousOrder = orders[0]
+
+	return(
+	  orders.map((order) => {
+		/* Add green/red to each order */
+
+	  	/* Get order price */
+	  	order = decorateOrder(order, tokens)
+	  	order = decorateFilledOrder(order, previousOrder)
+	  	previousOrder = order
+
+		return order
+
+	  })
+	)
+}
+
+
+/* Singular "Order" for individual orders, "Orders" for a group of orders */
+const decorateFilledOrder = (order, previousOrder) => {
+	return({
+		...order,
+		tokenPriceClass: tokenPriceClass(order.tokenPrice, order.id, previousOrder)
+
+	})
+}
+
+const tokenPriceClass = (tokenPrice, orderId, previousOrder) => {
+	if (previousOrder.id === orderId) {
+		return GREEN
+	}
+
+	if (previousOrder.tokenPrice <= tokenPrice) {
+		return GREEN
+	} else {
+		return RED
+  }
+ }
 
 /* ORDER BOOK */
 
