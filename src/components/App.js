@@ -21,6 +21,7 @@ import Markets from "./Markets"
 import Balance from "./Balance"
 import Order from "./Order"
 import PriceChart from "./PriceChart"
+import Transactions from "./Transactions"
 import Trades from "./Trades"
 import OrderBook from "./OrderBook"
 
@@ -109,7 +110,7 @@ Get all orders: open, filled, cancelled */
 
           <PriceChart />
 
-          {/* Transactions */}
+          <Transactions />
 
           <Trades />
 
