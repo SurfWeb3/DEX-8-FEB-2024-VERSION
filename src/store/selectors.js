@@ -218,7 +218,7 @@ In this context, "creator" made the order, and "user" filled the order  */
     orders = orders.filter((o) => o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address)
 
 /* Sort orders by decreasing date (later => earlier) */
-    orders = orders. sort((a, b) => b.timestamp - a.timestamp)
+    orders = orders.sort((a, b) => b.timestamp - a.timestamp)
 
 
 /* Add items for additional/user-friendly data/etc */
