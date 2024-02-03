@@ -7,6 +7,8 @@ import { ethers } from "ethers";
 const GREEN = "#25CE8F"
 const RED = "#F45353"
 
+
+
 const account = state => get(state, "provider.account")
 const tokens = state => get(state, "tokens.contracts")
 
@@ -200,6 +202,66 @@ const tokenPriceClass = (tokenPrice, orderId, previousOrder) => {
 		return RED
   }
  }
+
+/* MY FILLED ORDERS */
+export const myFilledOrdersSelector = createSelector(
+	account,
+	tokens,
+	filledOrders,
+	(account, tokens, orders) => {
+		if (!tokens[0] || !tokens[1]) { return }
+/* We find the order's of the account address.
+In this context, "creator" made the order, and "user" filled the order  */
+	orders = orders.filter((o) => o.user === account || o.creator === account)
+/* We filter orders to get the current trading pair */
+	orders = orders.filter((o) => o.tokenGet === tokens[0].address || o.tokenGet === tokens[1].address)
+    orders = orders.filter((o) => o.tokenGive === tokens[0].address || o.tokenGive === tokens[1].address)
+
+/* Sort orders by decreasing date (later => earlier) */
+    orders = orders. sort((a, b) => b.timestamp - a.timestamp)
+
+
+/* Add items for additional/user-friendly data/etc */
+    orders = decorateMyFilledOrders(orders, account, tokens)
+	return orders
+	}
+   )
+
+const decorateMyFilledOrders = (orders, account, tokens) => {
+	return(
+		orders.map((order)  => {
+			order = decorateOrder(order, tokens)
+			order = decorateMyFilledOrder(order, account, tokens)
+
+			return(order)
+		})
+    )	
+  }
+
+const decorateMyFilledOrder = (order, account, tokens) => {
+	
+	const myOrder = order.creator === account
+
+	let orderType
+	if(myOrder) {
+		orderType = order.tokenGive === tokens[1].address ? "buy" : "sell"
+	} else {
+		orderType = order.tokenGive === tokens[1].address ? "sell" : "buy"
+
+	}
+
+
+	return({
+		...order,
+		orderType,
+		orderClass: (orderType === "buy" ? GREEN : RED),
+		orderSign: (orderType === "buy" ? "+" : "-")
+
+	})	
+
+ }
+
+
 
 /* ORDER BOOK */
 
