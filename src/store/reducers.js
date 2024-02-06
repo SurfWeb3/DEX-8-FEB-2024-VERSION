@@ -271,6 +271,7 @@ case "TRANSFER_SUCCESS":
       isSuccessful: true
   },
   transferInProgress: false,
+  /* When transaction is successful, we update events */
   events: [action.event, ...state.events]   
 }
 
@@ -323,6 +324,7 @@ data is an array*/
       isPending: false,
       isSuccessful: true
     },
+/* When filling order is successful, we update events */
     events: [action.event, ...state.events]
   }
  

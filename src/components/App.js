@@ -24,6 +24,7 @@ import PriceChart from "./PriceChart"
 import Transactions from "./Transactions"
 import Trades from "./Trades"
 import OrderBook from "./OrderBook"
+import Alert from "./Alert"
 
 
 
@@ -119,7 +120,7 @@ Get all orders: open, filled, cancelled */
         </section>
       </main>
 
-      {/* Alert */}
+      <Alert />
 
     </div>
   );

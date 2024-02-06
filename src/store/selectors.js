@@ -11,6 +11,7 @@ const RED = "#F45353"
 
 const account = state => get(state, "provider.account")
 const tokens = state => get(state, "tokens.contracts")
+const events = state => get(state, "exchange.events")
 
 const allOrders = state => get(state, "exchange.allOrders.data", [])
 const cancelledOrders = state => get(state, "exchange.cancelledOrders.data", [])
@@ -34,6 +35,20 @@ const openOrders = state => {
 	return openOrders
 
 }
+
+
+/* MY EVENTS */
+/* CUSTOM SELECTOR */
+export const myEventsSelector = createSelector(
+	/* We want the user account */
+	account,
+	events,
+	(account, events) => {
+		events = events.filter((event) => event.args.user === account)
+		console.log(events)
+		return events
+  }
+ )
 
 
 /* USER'S OPEN ORDERS */

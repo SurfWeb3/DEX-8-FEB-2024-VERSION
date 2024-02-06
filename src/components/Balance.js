@@ -91,8 +91,6 @@ const Balance = () => {
 
     }
 
-
-console.log("withdrawing token")
   }
 
 
@@ -103,7 +101,7 @@ console.log("withdrawing token")
 
     } 
    
-  }, [exchange, tokens, account, transferInProgress])
+  }, [exchange, tokens, account, transferInProgress, dispatch])
 
   return (
     <div className='component exchange__transfers'>
@@ -161,7 +159,7 @@ console.log("withdrawing token")
         </div>
 
         <form onSubmit={isDeposit ? (event) => depositHandler(event, tokens[1]) : (event) => withdrawHandler(event, tokens[1])}>
-          <label htmlFor="token1"></label>
+          <label htmlFor="token1">{symbols && symbols[1]} Amount</label>
           <input 
           type="text"
           id='token1'
