@@ -10,7 +10,9 @@ import config from "../config.json";
 const Alert = () => {
   const alertRef = useRef(null)
 
-  const network = useSelector(state => state.provider.network)
+  const network = useSelector(state => state.provider.chainId)
+
+
 
   /* Check for account, 
 make sure that Metamask account is connected */
