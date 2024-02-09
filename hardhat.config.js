@@ -12,7 +12,7 @@ task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
   }
 });
 
-// You need to export an object to set up your config
+/*/ You need to export an object to set up your config
 // Go to https://hardhat.org/config/ to learn more
 
 /**
@@ -24,6 +24,10 @@ module.exports = {
     localhost: {},
     sepolia: {
       url: `https://sepolia.infura.io/v3/${process.env.INFURA_API_KEY}`,
+      accounts: privateKeys.split(",")
+    },
+    mumbai: {
+      url: `https://polygon-mumbai.g.alchemy.com/v2/${process.env.ALCHEMY_API_KEY}`,
       accounts: privateKeys.split(",")
     }
   },
